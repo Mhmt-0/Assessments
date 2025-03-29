@@ -10,6 +10,9 @@ pygame.display.set_caption("Flappy Bird")
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+
+font = pygame.font.Font(None, 36)
 
 class Bird:
     def __init__(self, x, y):
@@ -41,6 +44,7 @@ class Pipe:
         self.height_top = random.randint(100, 300)
         self.height_bottom = HEIGHT - self.height_top - self.gap
         self.speed = 3
+        self.passed = False
 
     def update(self):
         self.x -= self.speed
@@ -65,8 +69,13 @@ def check_collision(bird, pipes):
         return True
     return False
 
+def draw_score(screen, score):
+    text = font.render(f"Score: {score}", True, BLACK)
+    screen.blit(text, (10, 10))
+
 bird = Bird(WIDTH // 4, HEIGHT // 2)
 pipes = [Pipe(WIDTH + i * 200) for i in range(3)]
+score = 0
 
 clock = pygame.time.Clock()
 
@@ -85,8 +94,12 @@ while running:
     for pipe in pipes:
         pipe.update()
         pipe.draw(screen)
+        if pipe.x + pipe.width < bird.x and not pipe.passed:
+            score += 1
+            pipe.passed = True
     
     bird.draw(screen)
+    draw_score(screen, score)
     
     if check_collision(bird, pipes):
         running = False
@@ -95,5 +108,6 @@ while running:
     clock.tick(30)
     
 pygame.quit()
+
 
 
