@@ -91,12 +91,19 @@ while running:
                 bird.jump()
     
     bird.update()
+    
     for pipe in pipes:
         pipe.update()
         pipe.draw(screen)
+        
         if pipe.x + pipe.width < bird.x and not pipe.passed:
             score += 1
             pipe.passed = True
+        
+        if pipe.x + pipe.width < 0:
+            pipes.remove(pipe)
+            new_pipe = Pipe(WIDTH)
+            pipes.append(new_pipe)
     
     bird.draw(screen)
     draw_score(screen, score)
@@ -108,6 +115,4 @@ while running:
     clock.tick(30)
     
 pygame.quit()
-
-
 
