@@ -14,22 +14,33 @@ class Bird:
         self.x = x
         self.y = y
         self.radius = 15
+        self.velocity = 0 
+        self.gravity = 0.5
+
+    def update(self):
+        self.velocity += self.gravity
+        self.y += self.velocity
 
     def draw(self, screen):
-        pygame.draw.circle(screen, RED, (self.x, self.y), self.radius)
+        pygame.draw.circle(screen, RED, (self.x, int(self.y)), self.radius)
 
 bird = Bird(WIDTH // 4, HEIGHT // 2)
 
+clock = pygame.time.Clock()
+
 running = True
 while running:
-    screen.fill(WHITE) 
+    screen.fill(WHITE)
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
     
+    bird.update()
     bird.draw(screen)
     
     pygame.display.update()
+    clock.tick(30) 
     
 pygame.quit()
+
