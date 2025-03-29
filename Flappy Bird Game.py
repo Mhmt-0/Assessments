@@ -14,6 +14,9 @@ BLACK = (0, 0, 0)
 
 font = pygame.font.Font(None, 36)
 
+background = pygame.image.load("/Users/mehmet/Downloads/dg34rsu-29a3d144-dc3f-473e-a949-f73a4ba1ef7c.png")
+background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+
 class Bird:
     def __init__(self, x, y):
         self.x = x
@@ -81,7 +84,7 @@ clock = pygame.time.Clock()
 
 running = True
 while running:
-    screen.fill(WHITE)
+    screen.blit(background, (0, 0))
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -115,4 +118,3 @@ while running:
     clock.tick(30)
     
 pygame.quit()
-
