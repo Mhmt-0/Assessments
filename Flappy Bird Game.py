@@ -17,9 +17,9 @@ font = pygame.font.Font(None, 36)
 background = pygame.image.load("/Users/mehmet/Downloads/dg34rsu-29a3d144-dc3f-473e-a949-f73a4ba1ef7c.png")
 background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 
-jump_sound = pygame.mixer.Sound("jump.wav")
-collision_sound = pygame.mixer.Sound("collision.wav")
-score_sound = pygame.mixer.Sound("score.wav")
+jump_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/jump.mp3")
+collision_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/collision.mp3")
+score_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/score.mp3")
 
 def show_start_screen():
     screen.blit(background, (0, 0))
@@ -162,4 +162,3 @@ while True:
         clock.tick(30)
         
     show_game_over_screen(score)
-
