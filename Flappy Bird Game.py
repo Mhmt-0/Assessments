@@ -85,8 +85,8 @@ class Bird:
 class Pipe:
     def __init__(self, x):
         self.x = x
-        self.gap = 160  # Artırıldı
-        self.height_top = random.randint(100, 250)
+        self.gap = 200
+        self.height_top = random.randint(120, 220)
         self.height_bottom = HEIGHT - self.height_top - self.gap
         self.speed = 3
         self.passed = False
