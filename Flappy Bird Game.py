@@ -117,7 +117,8 @@ while running:
                 bird_movement = 0
                 bird_movement = -7
                 jump_sound.play()
-                bird_index = 1
+                bird_index = 0
+                bird_img = birds[bird_index]
 
             if event.key == pygame.K_SPACE and game_over:
                 game_over = False
@@ -130,7 +131,7 @@ while running:
         if event.type == bird_flap:
             bird_index = (bird_index + 1) % 3
             bird_img = birds[bird_index]
-            bird_rect = bird_up.get_rect(center=bird_rect.center)
+            bird_rect = bird_img.get_rect(center=bird_rect.center)
 
         if event.type == create_pipe:
             pipes.extend(create_pipes())
