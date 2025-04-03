@@ -13,7 +13,7 @@ def draw_floor():
 
 def create_pipes():
     pipe_y = random.choice(pipe_height)
-    top_pipe = pipe_img.get_rect(midbottom=(467, pipe_y - 300))
+    top_pipe = pipe_img.get_rect(midbottom=(467, pipe_y - pipe_gap))
     bottom_pipe = pipe_img.get_rect(midtop=(467, pipe_y))
     return top_pipe, bottom_pipe
 
@@ -26,7 +26,7 @@ def pipe_animation():
         else:
             screen.blit(pipe_img, pipe)
 
-        pipe.centerx -= 3
+        pipe.centerx -= pipe_speed
         if pipe.right < 0:
             pipes.remove(pipe)
 
@@ -36,23 +36,15 @@ def pipe_animation():
 
 def draw_score(game_state):
     if game_state == "game_on":
-        shadow_text = score_font.render(str(score), True, (50, 50, 50))
-        shadow_rect = shadow_text.get_rect(center=(width // 2 + 2, 68))
-        screen.blit(shadow_text, shadow_rect)
-
-        score_text = score_font.render(str(score), True, (255, 215, 0))
+        score_text = score_font.render(str(score), True, (255, 255, 255))
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
     elif game_state == "game_over":
-        shadow_text = score_font.render(f" Score: {score}", True, (50, 50, 50))
-        shadow_rect = shadow_text.get_rect(center=(width // 2 + 2, 68))
-        screen.blit(shadow_text, shadow_rect)
-
-        score_text = score_font.render(f" Score: {score}", True, (255, 215, 0))
+        score_text = score_font.render(f" Score: {score}", True, (255, 255, 255))
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
 
-        high_score_text = score_font.render(f"High Score: {high_score}", True, (255, 215, 0))
+        high_score_text = score_font.render(f"High Score: {high_score}", True, (255, 255, 255))
         high_score_rect = high_score_text.get_rect(center=(width // 2, 506))
         screen.blit(high_score_text, high_score_rect)
 
@@ -70,8 +62,28 @@ def score_update():
     if score > high_score:
         high_score = score
 
+def choose_difficulty():
+    global pipe_speed, pipe_gap
+    difficulty_selected = False
+    while not difficulty_selected:
+        screen.fill((0, 0, 0))
+        text = score_font.render("Choose Difficulty: 1-Easy 2-Medium 3-Hard", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(width // 2, height // 2))
+        screen.blit(text, text_rect)
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    pipe_speed, pipe_gap = 2, 350
+                    difficulty_selected = True
+                elif event.key == pygame.K_2:
+                    pipe_speed, pipe_gap = 3, 300
+                    difficulty_selected = True
+                elif event.key == pygame.K_3:
+                    pipe_speed, pipe_gap = 4, 250
+                    difficulty_selected = True
+
 width, height = 350, 622
-clock = pygame.time.Clock()
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Flappy Bird")
 
@@ -105,11 +117,13 @@ over_rect = over_img.get_rect(center=(width // 2, height // 2))
 score = 0
 high_score = 0
 score_time = True
-score_font = pygame.font.Font("freesansbold.ttf", 30)
+score_font = pygame.font.Font("freesansbold.ttf", 27)
 
 jump_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/jump.mp3")
 collision_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/collision.mp3")
 score_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/score.mp3")
+
+choose_difficulty()
 
 running = True
 while running:
@@ -168,7 +182,6 @@ while running:
         floor_x = 0
 
     draw_floor()
-
     pygame.display.update()
 
 pygame.quit()
