@@ -18,6 +18,8 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 ORANGE = (255, 165, 0)
 BLUE = (0, 191, 255)
+PURPLE = (147, 112, 219)
+PINK = (255, 192, 203)
 
 GRAVITY_VALUES = {
     "Easy": 0.15,
@@ -40,6 +42,25 @@ PIPE_GAPS = {
     "Expert": 200
 }
 
+FLASH_INTERVAL = 500
+last_flash = 0
+flash_on = False
+
+def create_gradient_text(surface, text, font, start_color, end_color, pos):
+    text_surface = font.render(text, True, start_color)
+    text_rect = text_surface.get_rect(center=pos)
+    
+    gradient_surface = pygame.Surface(text_surface.get_size(), pygame.SRCALPHA)
+    for y in range(text_surface.get_height()):
+        r = start_color[0] + (end_color[0] - start_color[0]) * y / text_surface.get_height()
+        g = start_color[1] + (end_color[1] - start_color[1]) * y / text_surface.get_height()
+        b = start_color[2] + (end_color[2] - start_color[2]) * y / text_surface.get_height()
+        color = (int(r), int(g), int(b))
+        pygame.draw.line(gradient_surface, color, (0, y), (text_surface.get_width(), y))
+    
+    gradient_surface.blit(text_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+    surface.blit(gradient_surface, text_rect)
+
 def load_scores():
     try:
         with open('scores.json', 'r') as f:
@@ -57,9 +78,7 @@ def save_score(new_score):
 
 def draw_leaderboard():
     screen.fill(BLACK)
-    title_text = score_font.render("HIGH SCORES", True, BLUE)
-    title_rect = title_text.get_rect(center=(width // 2, 100))
-    screen.blit(title_text, title_rect)
+    create_gradient_text(screen, "HIGH SCORES", score_font, BLUE, PURPLE, (width // 2, 100))
 
     scores = load_scores()
     y_offset = 200
@@ -102,8 +121,16 @@ def pipe_animation():
             game_over = True
 
 def draw_score(game_state):
+    global last_flash, flash_on
+    
+    current_time = pygame.time.get_ticks()
+    if current_time - last_flash >= FLASH_INTERVAL:
+        flash_on = not flash_on
+        last_flash = current_time
+
     if game_state == "game_on":
-        score_text = score_font.render(str(score), True, WHITE)
+        score_color = YELLOW if flash_on and score > high_score else WHITE
+        score_text = score_font.render(str(score), True, score_color)
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
     elif game_state == "game_over":
@@ -111,13 +138,17 @@ def draw_score(game_state):
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
 
+        if score >= high_score:
+            create_gradient_text(screen, "NEW HIGH SCORE!", small_font, YELLOW, RED, (width // 2, 120))
+
         high_score_text = score_font.render(f"High Score: {high_score}", True, YELLOW)
         high_score_rect = high_score_text.get_rect(center=(width // 2, 506))
         screen.blit(high_score_text, high_score_rect)
 
-        restart_text = small_font.render("Press SPACE to restart", True, GREEN)
-        restart_rect = restart_text.get_rect(center=(width // 2, 550))
-        screen.blit(restart_text, restart_rect)
+        if flash_on:
+            restart_text = small_font.render("Press SPACE to restart", True, GREEN)
+            restart_rect = restart_text.get_rect(center=(width // 2, 550))
+            screen.blit(restart_text, restart_rect)
 
 def score_update():
     global score, score_time, high_score
@@ -140,9 +171,7 @@ def choose_difficulty():
     
     while not difficulty_selected:
         screen.fill(BLACK)
-        title_text = score_font.render("SELECT DIFFICULTY", True, BLUE)
-        title_rect = title_text.get_rect(center=(width // 2, 100))
-        screen.blit(title_text, title_rect)
+        create_gradient_text(screen, "SELECT DIFFICULTY", score_font, BLUE, PURPLE, (width // 2, 100))
         
         difficulties = [
             ("1 - Easy", GREEN, (PIPE_SPEEDS["Easy"], PIPE_GAPS["Easy"], GRAVITY_VALUES["Easy"])),
@@ -188,6 +217,8 @@ def adjust_volume():
     
     while not volume_adjusted:
         screen.fill(BLACK)
+        create_gradient_text(screen, "VOLUME CONTROL", score_font, BLUE, PURPLE, (width // 2, 100))
+        
         volume_text = score_font.render(f"{int(VOLUME * 100)}%", True, WHITE)
         volume_rect = volume_text.get_rect(center=(width // 2, 180))
         screen.blit(volume_text, volume_rect)
@@ -199,7 +230,12 @@ def adjust_volume():
         
         pygame.draw.rect(screen, (100, 100, 100), (bar_x, bar_y, bar_width, bar_height))
         volume_width = int(bar_width * VOLUME)
-        pygame.draw.rect(screen, GREEN, (bar_x, bar_y, volume_width, bar_height))
+        volume_color = (
+            int(255 * (1 - VOLUME)),
+            int(255 * VOLUME),        
+            0                         
+        )
+        pygame.draw.rect(screen, volume_color, (bar_x, bar_y, volume_width, bar_height))
         
         controls = ["↑/↓: Adjust Volume", "ENTER: Save and Return"]
         y_pos = bar_y + 50
@@ -232,18 +268,18 @@ def main_menu():
         screen.blit(back_img, (0, 0))
         screen.blit(floor_img, (0, 550))
         
-        title_text = score_font.render("FLAPPY BIRD", True, YELLOW)
-        title_rect = title_text.get_rect(center=(width // 2, 150))
-        screen.blit(title_text, title_rect)
+        create_gradient_text(screen, "FLAPPY BIRD", score_font, YELLOW, ORANGE, (width // 2, 150))
         
         options = ["Play", "Leaderboard", "Volume", "Quit"]
         y_offset = 300
         
         for i, option in enumerate(options):
-            color = BLUE if i == selected_option else WHITE
-            text = score_font.render(option, True, color)
-            text_rect = text.get_rect(center=(width // 2, y_offset))
-            screen.blit(text, text_rect)
+            if i == selected_option:
+                create_gradient_text(screen, option, score_font, BLUE, PURPLE, (width // 2, y_offset))
+            else:
+                text = score_font.render(option, True, WHITE)
+                text_rect = text.get_rect(center=(width // 2, y_offset))
+                screen.blit(text, text_rect)
             y_offset += 50
         
         controls_text = small_font.render("↑/↓: Select   ENTER: Confirm", True, WHITE)
