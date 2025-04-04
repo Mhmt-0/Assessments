@@ -67,6 +67,11 @@ FLASH_INTERVAL = 500
 last_flash = 0
 flash_on = False
 
+bg_colors = [(135, 206, 235), (100, 149, 237)]
+bg_color_index = 0
+bg_transition_speed = 0.01
+bg_transition_progress = 0
+
 def create_gradient_text(surface, text, font, start_color, end_color, pos):
     text_surface = font.render(text, True, start_color)
     text_rect = text_surface.get_rect(center=pos)
@@ -81,6 +86,22 @@ def create_gradient_text(surface, text, font, start_color, end_color, pos):
     
     gradient_surface.blit(text_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
     surface.blit(gradient_surface, text_rect)
+
+def update_background_color():
+    global bg_transition_progress, bg_color_index
+    bg_transition_progress += bg_transition_speed
+    if bg_transition_progress >= 1:
+        bg_transition_progress = 0
+        bg_color_index = (bg_color_index + 1) % len(bg_colors)
+    
+    current_color = bg_colors[bg_color_index]
+    next_color = bg_colors[(bg_color_index + 1) % len(bg_colors)]
+    
+    r = current_color[0] + (next_color[0] - current_color[0]) * bg_transition_progress
+    g = current_color[1] + (next_color[1] - current_color[1]) * bg_transition_progress
+    b = current_color[2] + (next_color[2] - current_color[2]) * bg_transition_progress
+    
+    return (int(r), int(g), int(b))
 
 def colorize_surface(surface, color):
     colored_surface = surface.copy()
@@ -196,13 +217,14 @@ def pipe_animation():
         else:
             screen.blit(pipe_surface, pipe)
 
-        pipe.centerx -= pipe_speed
-        if pipe.right < 0:
-            pipes.remove((pipe, pipe_surface))
+        if not game_paused:
+            pipe.centerx -= pipe_speed
+            if pipe.right < 0:
+                pipes.remove((pipe, pipe_surface))
 
-        if bird_rect.colliderect(pipe):
-            collision_sound.play()
-            game_over = True
+            if bird_rect.colliderect(pipe):
+                collision_sound.play()
+                game_over = True
 
 def draw_score(game_state):
     global last_flash, flash_on
@@ -409,7 +431,7 @@ bird_down = pygame.image.load("/Users/mehmet/Downloads/img_49.png").convert_alph
 birds = [bird_up, bird_mid, bird_down]
 bird_index = 0
 bird_flap = pygame.USEREVENT
-pygame.time.set_timer(bird_flap, 200)
+pygame.time.set_timer(bird_flap, 150)
 bird_img = birds[bird_index]
 bird_rect = bird_img.get_rect(center=(67, 622 // 2))
 bird_movement = 0
@@ -422,6 +444,7 @@ create_pipe = pygame.USEREVENT + 1
 pygame.time.set_timer(create_pipe, 1200)
 
 game_over = False
+game_paused = False
 over_img = pygame.image.load("/Users/mehmet/Downloads/img_45.png").convert_alpha()
 over_rect = over_img.get_rect(center=(width // 2, height // 2))
 
@@ -457,34 +480,50 @@ while True:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE and not game_over:
-                        bird_movement = 0
-                        bird_movement = -7
-                        jump_sound.play()
-                        bird_index = 1
+                        if not game_paused:
+                            bird_movement = 0
+                            bird_movement = -7
+                            jump_sound.play()
+                            bird_index = 1
 
                     if event.key == pygame.K_SPACE and game_over:
                         save_score(score)
                         game_over = False
-                        pipes = []
+                        game_paused = False
                         bird_movement = 0
                         bird_rect = bird_img.get_rect(center=(67, 622 // 2))
                         score_time = True
                         score = 0
+                    
+                    if event.key == pygame.K_p and not game_over:
+                        game_paused = not game_paused
+                        if game_paused:
+                            pygame.time.set_timer(bird_flap, 0)
+                            pygame.time.set_timer(create_pipe, 0)
+                        else:
+                            pygame.time.set_timer(bird_flap, 150)
+                            pygame.time.set_timer(create_pipe, 1200)
 
-                if event.type == bird_flap:
+                if event.type == bird_flap and not game_paused:
                     bird_index = (bird_index + 1) % 3
                     bird_img = birds[bird_index]
                     bird_rect = bird_up.get_rect(center=bird_rect.center)
 
-                if event.type == create_pipe:
+                if event.type == create_pipe and not game_paused:
                     new_pipes = create_pipes()
                     pipes.append((new_pipes[0], new_pipes[2]))
                     pipes.append((new_pipes[1], new_pipes[2]))
 
-            screen.blit(floor_img, (floor_x, 550))
+            if not game_paused:
+                bg_color = update_background_color()
+                screen.fill(bg_color)
+            else:
+                screen.fill(bg_colors[bg_color_index])
+                
             screen.blit(back_img, (0, 0))
+            screen.blit(floor_img, (floor_x, 550))
 
-            if not game_over:
+            if not game_over and not game_paused:
                 bird_movement += gravity
                 bird_rect.centery += bird_movement
                 rotated_bird = pygame.transform.rotozoom(bird_img, bird_movement * -6, 1)
@@ -497,13 +536,32 @@ while True:
                 pipe_animation()
                 score_update()
                 draw_score("game_on")
+            elif game_paused:
+                rotated_bird = pygame.transform.rotozoom(bird_img, bird_movement * -6, 1)
+                screen.blit(rotated_bird, bird_rect)
+                for pipe, pipe_surface in pipes:
+                    if pipe.top < 0:
+                        flipped_pipe = pygame.transform.flip(pipe_surface, False, True)
+                        screen.blit(flipped_pipe, pipe)
+                    else:
+                        screen.blit(pipe_surface, pipe)
+                draw_score("game_on")
+                
+                pause_text = score_font.render("PAUSED", True, WHITE)
+                pause_rect = pause_text.get_rect(center=(width // 2, height // 2))
+                screen.blit(pause_text, pause_rect)
+                
+                resume_text = small_font.render("Press P to Resume", True, GREEN)
+                resume_rect = resume_text.get_rect(center=(width // 2, height // 2 + 40))
+                screen.blit(resume_text, resume_rect)
             else:
                 screen.blit(over_img, over_rect)
                 draw_score("game_over")
 
-            floor_x -= 1
-            if floor_x < -448:
-                floor_x = 0
+            if not game_paused:
+                floor_x -= 1
+                if floor_x < -448:
+                    floor_x = 0
 
             draw_floor()
             pygame.display.update()
