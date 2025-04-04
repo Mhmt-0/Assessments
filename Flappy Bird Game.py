@@ -21,6 +21,14 @@ BLUE = (0, 191, 255)
 PURPLE = (147, 112, 219)
 PINK = (255, 192, 203)
 
+BIRD_COLORS = {
+    "Yellow": (255, 255, 0),
+    "Blue": (0, 191, 255),
+    "Red": (255, 0, 0)
+}
+
+CURRENT_BIRD_COLOR = "Yellow"
+
 GRAVITY_VALUES = {
     "Easy": 0.15,
     "Medium": 0.17,
@@ -60,6 +68,56 @@ def create_gradient_text(surface, text, font, start_color, end_color, pos):
     
     gradient_surface.blit(text_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
     surface.blit(gradient_surface, text_rect)
+
+def colorize_surface(surface, color):
+    colored_surface = surface.copy()
+    colored_surface.fill(color, special_flags=pygame.BLEND_MULT)
+    return colored_surface
+
+def choose_bird_color():
+    global CURRENT_BIRD_COLOR, bird_up, bird_mid, bird_down, birds, bird_img, bird_rect
+    color_selected = False
+    
+    original_up = pygame.image.load("/Users/mehmet/Downloads/img_47.png").convert_alpha()
+    original_mid = pygame.image.load("/Users/mehmet/Downloads/img_48.png").convert_alpha()
+    original_down = pygame.image.load("/Users/mehmet/Downloads/img_49.png").convert_alpha()
+    
+    while not color_selected:
+        screen.fill(BLACK)
+        create_gradient_text(screen, "SELECT BIRD COLOR", score_font, BLUE, PURPLE, (width // 2, 100))
+        
+        y_offset = 200
+        for i, (color_name, color_value) in enumerate(BIRD_COLORS.items(), 1):
+            colored_bird = colorize_surface(original_mid, color_value)
+            bird_rect = colored_bird.get_rect(center=(width // 2 - 100, y_offset))
+            screen.blit(colored_bird, bird_rect)
+            
+            text = score_font.render(f"{i} - {color_name}", True, color_value)
+            text_rect = text.get_rect(midleft=(width // 2 - 50, y_offset))
+            screen.blit(text, text_rect)
+            y_offset += 50
+        
+        instruction_text = small_font.render("Press 1-3 to select color", True, WHITE)
+        instruction_rect = instruction_text.get_rect(center=(width // 2, y_offset + 20))
+        screen.blit(instruction_text, instruction_rect)
+        
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key in [pygame.K_1, pygame.K_2, pygame.K_3]:
+                    index = int(event.unicode) - 1
+                    CURRENT_BIRD_COLOR = list(BIRD_COLORS.keys())[index]
+                    color = BIRD_COLORS[CURRENT_BIRD_COLOR]
+                    
+                    bird_up = colorize_surface(original_up, color)
+                    bird_mid = colorize_surface(original_mid, color)
+                    bird_down = colorize_surface(original_down, color)
+                    birds = [bird_up, bird_mid, bird_down]
+                    bird_img = birds[bird_index]
+                    bird_rect = bird_img.get_rect(center=(67, 622 // 2))
+                    
+                    color_selected = True
 
 def load_scores():
     try:
@@ -270,7 +328,7 @@ def main_menu():
         
         create_gradient_text(screen, "FLAPPY BIRD", score_font, YELLOW, ORANGE, (width // 2, 150))
         
-        options = ["Play", "Leaderboard", "Volume", "Quit"]
+        options = ["Play", "Bird Color", "Leaderboard", "Volume", "Quit"]
         y_offset = 300
         
         for i, option in enumerate(options):
@@ -294,16 +352,18 @@ def main_menu():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % 4
+                    selected_option = (selected_option - 1) % 5
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % 4
+                    selected_option = (selected_option + 1) % 5
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:
                         menu_active = False
                         return "play"
                     elif selected_option == 1:
-                        return "leaderboard"
+                        return "bird_color"
                     elif selected_option == 2:
+                        return "leaderboard"
+                    elif selected_option == 3:
                         return "volume"
                     else:
                         pygame.quit()
@@ -317,9 +377,9 @@ back_img = pygame.image.load("/Users/mehmet/Downloads/img_46.png")
 floor_img = pygame.image.load("/Users/mehmet/Downloads/img_50.png")
 floor_x = 0
 
-bird_up = pygame.image.load("/Users/mehmet/Downloads/img_47.png")
-bird_down = pygame.image.load("/Users/mehmet/Downloads/img_48.png")
-bird_mid = pygame.image.load("/Users/mehmet/Downloads/img_49.png")
+bird_up = pygame.image.load("/Users/mehmet/Downloads/img_47.png").convert_alpha()
+bird_mid = pygame.image.load("/Users/mehmet/Downloads/img_48.png").convert_alpha()
+bird_down = pygame.image.load("/Users/mehmet/Downloads/img_49.png").convert_alpha()
 birds = [bird_up, bird_mid, bird_down]
 bird_index = 0
 bird_flap = pygame.USEREVENT
@@ -420,6 +480,9 @@ while True:
 
             draw_floor()
             pygame.display.update()
+    
+    elif menu_choice == "bird_color":
+        choose_bird_color()
     
     elif menu_choice == "leaderboard":
         showing_leaderboard = True
