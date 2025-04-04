@@ -27,7 +27,16 @@ BIRD_COLORS = {
     "Red": (255, 0, 0)
 }
 
+PIPE_COLORS = {
+    "Green": (0, 255, 0),
+    "Blue": (0, 191, 255),
+    "Red": (255, 0, 0),
+    "Purple": (147, 112, 219),
+    "Orange": (255, 165, 0)
+}
+
 CURRENT_BIRD_COLOR = "Yellow"
+CURRENT_PIPE_COLOR = "Green"
 
 GRAVITY_VALUES = {
     "Easy": 0.15,
@@ -49,6 +58,10 @@ PIPE_GAPS = {
     "Hard": 250,
     "Expert": 200
 }
+
+PIPE_SCALES = [0.8, 1.0, 1.2]
+
+PIPE_Y_POSITIONS = [200, 250, 300, 350, 400]
 
 FLASH_INTERVAL = 500
 last_flash = 0
@@ -73,6 +86,10 @@ def colorize_surface(surface, color):
     colored_surface = surface.copy()
     colored_surface.fill(color, special_flags=pygame.BLEND_MULT)
     return colored_surface
+
+def scale_surface(surface, scale):
+    new_size = (int(surface.get_width() * scale), int(surface.get_height() * scale))
+    return pygame.transform.scale(surface, new_size)
 
 def choose_bird_color():
     global CURRENT_BIRD_COLOR, bird_up, bird_mid, bird_down, birds, bird_img, bird_rect
@@ -156,23 +173,32 @@ def draw_floor():
     screen.blit(floor_img, (floor_x + 448, 520))
 
 def create_pipes():
-    pipe_y = random.choice(pipe_height)
-    top_pipe = pipe_img.get_rect(midbottom=(467, pipe_y - pipe_gap))
-    bottom_pipe = pipe_img.get_rect(midtop=(467, pipe_y))
-    return top_pipe, bottom_pipe
+    global CURRENT_PIPE_COLOR
+    pipe_y = random.choice(PIPE_Y_POSITIONS)
+    
+    CURRENT_PIPE_COLOR = random.choice(list(PIPE_COLORS.keys()))
+    colored_pipe = colorize_surface(pipe_img, PIPE_COLORS[CURRENT_PIPE_COLOR])
+    
+    scale = random.choice(PIPE_SCALES)
+    scaled_pipe = scale_surface(colored_pipe, scale)
+    
+    top_pipe = scaled_pipe.get_rect(midbottom=(467, pipe_y - pipe_gap))
+    bottom_pipe = scaled_pipe.get_rect(midtop=(467, pipe_y))
+    
+    return top_pipe, bottom_pipe, scaled_pipe
 
 def pipe_animation():
     global game_over, score_time
-    for pipe in pipes:
+    for pipe, pipe_surface in pipes:
         if pipe.top < 0:
-            flipped_pipe = pygame.transform.flip(pipe_img, False, True)
+            flipped_pipe = pygame.transform.flip(pipe_surface, False, True)
             screen.blit(flipped_pipe, pipe)
         else:
-            screen.blit(pipe_img, pipe)
+            screen.blit(pipe_surface, pipe)
 
         pipe.centerx -= pipe_speed
         if pipe.right < 0:
-            pipes.remove(pipe)
+            pipes.remove((pipe, pipe_surface))
 
         if bird_rect.colliderect(pipe):
             collision_sound.play()
@@ -211,7 +237,7 @@ def draw_score(game_state):
 def score_update():
     global score, score_time, high_score
     if pipes:
-        for pipe in pipes:
+        for pipe, _ in pipes:
             if 65 < pipe.centerx < 69 and score_time:
                 score += 1
                 score_time = False
@@ -389,8 +415,7 @@ bird_rect = bird_img.get_rect(center=(67, 622 // 2))
 bird_movement = 0
 gravity = 0.17
 
-pipe_img = pygame.image.load("/Users/mehmet/Downloads/greenpipe.png")
-pipe_height = [400, 350, 533, 490]
+pipe_img = pygame.image.load("/Users/mehmet/Downloads/greenpipe.png").convert_alpha()
 
 pipes = []
 create_pipe = pygame.USEREVENT + 1
@@ -452,7 +477,9 @@ while True:
                     bird_rect = bird_up.get_rect(center=bird_rect.center)
 
                 if event.type == create_pipe:
-                    pipes.extend(create_pipes())
+                    new_pipes = create_pipes()
+                    pipes.append((new_pipes[0], new_pipes[2]))
+                    pipes.append((new_pipes[1], new_pipes[2]))
 
             screen.blit(floor_img, (floor_x, 550))
             screen.blit(back_img, (0, 0))
