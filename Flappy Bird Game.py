@@ -2,10 +2,45 @@ import pygame
 import sys
 import time
 import random
+import json
+from pathlib import Path
 
 pygame.init()
 
 clock = pygame.time.Clock()
+
+def load_scores():
+    try:
+        with open('scores.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {'high_scores': []}
+
+def save_score(new_score):
+    scores = load_scores()
+    scores['high_scores'].append(new_score)
+    scores['high_scores'].sort(reverse=True)
+    scores['high_scores'] = scores['high_scores'][:5]
+    with open('scores.json', 'w') as f:
+        json.dump(scores, f)
+
+def draw_leaderboard():
+    screen.fill((0, 0, 0))
+    title_text = score_font.render("HIGH SCORES", True, (255, 255, 255))
+    title_rect = title_text.get_rect(center=(width // 2, 100))
+    screen.blit(title_text, title_rect)
+
+    scores = load_scores()
+    y_offset = 200
+    for i, score in enumerate(scores['high_scores'], 1):
+        score_text = score_font.render(f"{i}. {score}", True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(width // 2, y_offset))
+        screen.blit(score_text, score_rect)
+        y_offset += 50
+
+    instruction_text = score_font.render("Press SPACE to play", True, (255, 255, 255))
+    instruction_rect = instruction_text.get_rect(center=(width // 2, 500))
+    screen.blit(instruction_text, instruction_rect)
 
 def draw_floor():
     screen.blit(floor_img, (floor_x, 520))
@@ -99,7 +134,7 @@ def main_menu():
         title_rect = title_text.get_rect(center=(width // 2, 150))
         screen.blit(title_text, title_rect)
         
-        options = ["Play", "Quit"]
+        options = ["Play", "Leaderboard", "Quit"]
         y_offset = 300
         
         for i, option in enumerate(options):
@@ -117,13 +152,15 @@ def main_menu():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % 2
+                    selected_option = (selected_option - 1) % 3
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % 2
+                    selected_option = (selected_option + 1) % 3
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:
                         menu_active = False
-                        return True
+                        return "play"
+                    elif selected_option == 1:
+                        return "leaderboard"
                     else:
                         pygame.quit()
                         sys.exit()
@@ -169,7 +206,9 @@ collision_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/collision.mp3")
 score_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/score.mp3")
 
 while True:
-    if main_menu():  # If Play is selected
+    menu_choice = main_menu()
+    
+    if menu_choice == "play":
         choose_difficulty()
         
         running = True
@@ -189,6 +228,7 @@ while True:
                         bird_index = 1
 
                     if event.key == pygame.K_SPACE and game_over:
+                        save_score(score)
                         game_over = False
                         pipes = []
                         bird_movement = 0
@@ -229,4 +269,18 @@ while True:
                 floor_x = 0
 
             draw_floor()
+            pygame.display.update()
+    
+    elif menu_choice == "leaderboard":
+        showing_leaderboard = True
+        while showing_leaderboard:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        showing_leaderboard = False
+            
+            draw_leaderboard()
             pygame.display.update()
