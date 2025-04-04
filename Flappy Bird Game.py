@@ -16,6 +16,29 @@ BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+ORANGE = (255, 165, 0)
+BLUE = (0, 191, 255)
+
+GRAVITY_VALUES = {
+    "Easy": 0.15,
+    "Medium": 0.17,
+    "Hard": 0.19,
+    "Expert": 0.21
+}
+
+PIPE_SPEEDS = {
+    "Easy": 2,
+    "Medium": 3,
+    "Hard": 4,
+    "Expert": 5
+}
+
+PIPE_GAPS = {
+    "Easy": 350,
+    "Medium": 300,
+    "Hard": 250,
+    "Expert": 200
+}
 
 def load_scores():
     try:
@@ -34,19 +57,20 @@ def save_score(new_score):
 
 def draw_leaderboard():
     screen.fill(BLACK)
-    title_text = score_font.render("HIGH SCORES", True, WHITE)
+    title_text = score_font.render("HIGH SCORES", True, BLUE)
     title_rect = title_text.get_rect(center=(width // 2, 100))
     screen.blit(title_text, title_rect)
 
     scores = load_scores()
     y_offset = 200
     for i, score in enumerate(scores['high_scores'], 1):
-        score_text = score_font.render(f"{i}. {score}", True, WHITE)
+        color = YELLOW if i == 1 else WHITE
+        score_text = score_font.render(f"{i}. {score}", True, color)
         score_rect = score_text.get_rect(center=(width // 2, y_offset))
         screen.blit(score_text, score_rect)
         y_offset += 50
 
-    instruction_text = score_font.render("Press SPACE to play", True, WHITE)
+    instruction_text = score_font.render("Press SPACE to return", True, GREEN)
     instruction_rect = instruction_text.get_rect(center=(width // 2, 500))
     screen.blit(instruction_text, instruction_rect)
 
@@ -83,13 +107,17 @@ def draw_score(game_state):
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
     elif game_state == "game_over":
-        score_text = score_font.render(f" Score: {score}", True, WHITE)
+        score_text = score_font.render(f"Score: {score}", True, WHITE)
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
 
-        high_score_text = score_font.render(f"High Score: {high_score}", True, WHITE)
+        high_score_text = score_font.render(f"High Score: {high_score}", True, YELLOW)
         high_score_rect = high_score_text.get_rect(center=(width // 2, 506))
         screen.blit(high_score_text, high_score_rect)
+
+        restart_text = small_font.render("Press SPACE to restart", True, GREEN)
+        restart_rect = restart_text.get_rect(center=(width // 2, 550))
+        screen.blit(restart_text, restart_rect)
 
 def score_update():
     global score, score_time, high_score
@@ -108,17 +136,19 @@ def score_update():
 def choose_difficulty():
     global pipe_speed, pipe_gap, gravity
     difficulty_selected = False
+    small_font = pygame.font.Font("freesansbold.ttf", 20)
+    
     while not difficulty_selected:
         screen.fill(BLACK)
-        title_text = score_font.render("SELECT DIFFICULTY", True, WHITE)
+        title_text = score_font.render("SELECT DIFFICULTY", True, BLUE)
         title_rect = title_text.get_rect(center=(width // 2, 100))
         screen.blit(title_text, title_rect)
         
         difficulties = [
-            ("1 - Easy", GREEN, (2, 350, 0.15)),
-            ("2 - Medium", YELLOW, (3, 300, 0.17)),
-            ("3 - Hard", (255, 165, 0), (4, 250, 0.19)),
-            ("4 - Expert", RED, (5, 200, 0.21))
+            ("1 - Easy", GREEN, (PIPE_SPEEDS["Easy"], PIPE_GAPS["Easy"], GRAVITY_VALUES["Easy"])),
+            ("2 - Medium", YELLOW, (PIPE_SPEEDS["Medium"], PIPE_GAPS["Medium"], GRAVITY_VALUES["Medium"])),
+            ("3 - Hard", ORANGE, (PIPE_SPEEDS["Hard"], PIPE_GAPS["Hard"], GRAVITY_VALUES["Hard"])),
+            ("4 - Expert", RED, (PIPE_SPEEDS["Expert"], PIPE_GAPS["Expert"], GRAVITY_VALUES["Expert"]))
         ]
         
         y_offset = 200
@@ -127,6 +157,20 @@ def choose_difficulty():
             text_rect = text.get_rect(center=(width // 2, y_offset))
             screen.blit(text, text_rect)
             y_offset += 50
+        
+        info_y = y_offset + 20
+        descriptions = [
+            ("Easy: Perfect for beginners", GREEN),
+            ("Medium: A good challenge", YELLOW),
+            ("Hard: For experienced players", ORANGE),
+            ("Expert: The ultimate test!", RED)
+        ]
+        
+        for desc, color in descriptions:
+            info_text = small_font.render(desc, True, color)
+            info_rect = info_text.get_rect(center=(width // 2, info_y))
+            screen.blit(info_text, info_rect)
+            info_y += 25
             
         pygame.display.update()
         
@@ -144,22 +188,20 @@ def adjust_volume():
     
     while not volume_adjusted:
         screen.fill(BLACK)
-        y_pos = 180
-        for text in ["VOLUME", f"{int(VOLUME * 100)}%"]:
-            rendered_text = small_font.render(text, True, WHITE)
-            text_rect = rendered_text.get_rect(center=(width // 2, y_pos))
-            screen.blit(rendered_text, text_rect)
-            y_pos += 30
+        volume_text = score_font.render(f"{int(VOLUME * 100)}%", True, WHITE)
+        volume_rect = volume_text.get_rect(center=(width // 2, 180))
+        screen.blit(volume_text, volume_rect)
         
         bar_width = 200
         bar_height = 20
         bar_x = (width - bar_width) // 2
-        bar_y = y_pos + 10
+        bar_y = 220
         
         pygame.draw.rect(screen, (100, 100, 100), (bar_x, bar_y, bar_width, bar_height))
-        pygame.draw.rect(screen, GREEN, (bar_x, bar_y, int(bar_width * VOLUME), bar_height))
+        volume_width = int(bar_width * VOLUME)
+        pygame.draw.rect(screen, GREEN, (bar_x, bar_y, volume_width, bar_height))
         
-        controls = ["↑/↓: Adjust", "ENTER: Confirm"]
+        controls = ["↑/↓: Adjust Volume", "ENTER: Save and Return"]
         y_pos = bar_y + 50
         for control in controls:
             text = small_font.render(control, True, WHITE)
@@ -190,7 +232,7 @@ def main_menu():
         screen.blit(back_img, (0, 0))
         screen.blit(floor_img, (0, 550))
         
-        title_text = score_font.render("FLAPPY BIRD", True, WHITE)
+        title_text = score_font.render("FLAPPY BIRD", True, YELLOW)
         title_rect = title_text.get_rect(center=(width // 2, 150))
         screen.blit(title_text, title_rect)
         
@@ -198,11 +240,15 @@ def main_menu():
         y_offset = 300
         
         for i, option in enumerate(options):
-            color = YELLOW if i == selected_option else WHITE
+            color = BLUE if i == selected_option else WHITE
             text = score_font.render(option, True, color)
             text_rect = text.get_rect(center=(width // 2, y_offset))
             screen.blit(text, text_rect)
             y_offset += 50
+        
+        controls_text = small_font.render("↑/↓: Select   ENTER: Confirm", True, WHITE)
+        controls_rect = controls_text.get_rect(center=(width // 2, y_offset + 20))
+        screen.blit(controls_text, controls_rect)
             
         pygame.display.update()
         
@@ -261,7 +307,9 @@ over_rect = over_img.get_rect(center=(width // 2, height // 2))
 score = 0
 high_score = 0
 score_time = True
+
 score_font = pygame.font.Font("freesansbold.ttf", 27)
+small_font = pygame.font.Font("freesansbold.ttf", 20)
 
 jump_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/jump.mp3")
 collision_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/collision.mp3")
