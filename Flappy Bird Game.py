@@ -24,7 +24,9 @@ PINK = (255, 192, 203)
 BIRD_COLORS = {
     "Yellow": (255, 255, 0),
     "Blue": (0, 191, 255),
-    "Red": (255, 0, 0)
+    "Red": (255, 0, 0),
+    "Purple": (147, 112, 219),
+    "Pink": (255, 192, 203)
 }
 
 PIPE_COLORS = {
@@ -32,7 +34,8 @@ PIPE_COLORS = {
     "Blue": (0, 191, 255),
     "Red": (255, 0, 0),
     "Purple": (147, 112, 219),
-    "Orange": (255, 165, 0)
+    "Orange": (255, 165, 0),
+    "Pink": (255, 192, 203)
 }
 
 CURRENT_BIRD_COLOR = "Yellow"
@@ -67,9 +70,9 @@ FLASH_INTERVAL = 500
 last_flash = 0
 flash_on = False
 
-bg_colors = [(135, 206, 235), (100, 149, 237)]
+bg_colors = [(135, 206, 235), (100, 149, 237), (147, 112, 219)]
 bg_color_index = 0
-bg_transition_speed = 0.01
+bg_transition_speed = 0.015
 bg_transition_progress = 0
 
 def create_gradient_text(surface, text, font, start_color, end_color, pos):
@@ -135,7 +138,7 @@ def choose_bird_color():
             screen.blit(text, text_rect)
             y_offset += 50
         
-        instruction_text = small_font.render("Press 1-3 to select color", True, WHITE)
+        instruction_text = small_font.render("Press 1-5 to select color", True, WHITE)
         instruction_rect = instruction_text.get_rect(center=(width // 2, y_offset + 20))
         screen.blit(instruction_text, instruction_rect)
         
@@ -143,7 +146,7 @@ def choose_bird_color():
         
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key in [pygame.K_1, pygame.K_2, pygame.K_3]:
+                if event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5]:
                     index = int(event.unicode) - 1
                     CURRENT_BIRD_COLOR = list(BIRD_COLORS.keys())[index]
                     color = BIRD_COLORS[CURRENT_BIRD_COLOR]
@@ -490,10 +493,12 @@ while True:
                         save_score(score)
                         game_over = False
                         game_paused = False
+                        pipes.clear()
                         bird_movement = 0
-                        bird_rect = bird_img.get_rect(center=(67, 622 // 2))
+                        bird_rect.center = (67, height // 2)
                         score_time = True
                         score = 0
+                        pygame.time.set_timer(create_pipe, 1200)
                     
                     if event.key == pygame.K_p and not game_over:
                         game_paused = not game_paused
