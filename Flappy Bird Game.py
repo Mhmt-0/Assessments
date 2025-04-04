@@ -67,9 +67,13 @@ def choose_difficulty():
     difficulty_selected = False
     while not difficulty_selected:
         screen.fill((0, 0, 0))
-        text = score_font.render("Choose Difficulty: 1-Easy 2-Medium 3-Hard", True, (255, 255, 255))
-        text_rect = text.get_rect(center=(width // 2, height // 2))
-        screen.blit(text, text_rect)
+        options = ["1 - Easy", "2 - Medium", "3 - Hard"]
+        y_offset = 200
+        for option in options:
+            text = score_font.render(option, True, (255, 255, 255))
+            text_rect = text.get_rect(center=(width // 2, y_offset))
+            screen.blit(text, text_rect)
+            y_offset += 50
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
