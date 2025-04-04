@@ -9,6 +9,8 @@ pygame.init()
 
 clock = pygame.time.Clock()
 
+VOLUME = 0.5
+
 def load_scores():
     try:
         with open('scores.json', 'r') as f:
@@ -98,11 +100,11 @@ def score_update():
         high_score = score
 
 def choose_difficulty():
-    global pipe_speed, pipe_gap
+    global pipe_speed, pipe_gap, gravity
     difficulty_selected = False
     while not difficulty_selected:
         screen.fill((0, 0, 0))
-        options = ["1 - Easy", "2 - Medium", "3 - Hard"]
+        options = ["1 - Easy", "2 - Medium", "3 - Hard", "4 - Expert"]
         y_offset = 200
         for option in options:
             text = score_font.render(option, True, (255, 255, 255))
@@ -113,14 +115,49 @@ def choose_difficulty():
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    pipe_speed, pipe_gap = 2, 350
+                    pipe_speed, pipe_gap, gravity = 2, 350, 0.15
                     difficulty_selected = True
                 elif event.key == pygame.K_2:
-                    pipe_speed, pipe_gap = 3, 300
+                    pipe_speed, pipe_gap, gravity = 3, 300, 0.17
                     difficulty_selected = True
                 elif event.key == pygame.K_3:
-                    pipe_speed, pipe_gap = 4, 250
+                    pipe_speed, pipe_gap, gravity = 4, 250, 0.19
                     difficulty_selected = True
+                elif event.key == pygame.K_4:
+                    pipe_speed, pipe_gap, gravity = 5, 200, 0.21
+                    difficulty_selected = True
+
+def adjust_volume():
+    global VOLUME
+    volume_adjusted = False
+    while not volume_adjusted:
+        screen.fill((0, 0, 0))
+        title_text = score_font.render("VOLUME SETTINGS", True, (255, 255, 255))
+        title_rect = title_text.get_rect(center=(width // 2, 150))
+        screen.blit(title_text, title_rect)
+        
+        volume_text = score_font.render(f"Current Volume: {int(VOLUME * 100)}%", True, (255, 255, 255))
+        volume_rect = volume_text.get_rect(center=(width // 2, 250))
+        screen.blit(volume_text, volume_rect)
+        
+        instruction_text = score_font.render("Up/Down to adjust, ENTER to confirm", True, (255, 255, 255))
+        instruction_rect = instruction_text.get_rect(center=(width // 2, 350))
+        screen.blit(instruction_text, instruction_rect)
+        
+        pygame.display.update()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    VOLUME = min(1.0, VOLUME + 0.1)
+                elif event.key == pygame.K_DOWN:
+                    VOLUME = max(0.0, VOLUME - 0.1)
+                elif event.key == pygame.K_RETURN:
+                    volume_adjusted = True
+                    
+        jump_sound.set_volume(VOLUME)
+        collision_sound.set_volume(VOLUME)
+        score_sound.set_volume(VOLUME)
 
 def main_menu():
     menu_active = True
@@ -134,7 +171,7 @@ def main_menu():
         title_rect = title_text.get_rect(center=(width // 2, 150))
         screen.blit(title_text, title_rect)
         
-        options = ["Play", "Leaderboard", "Quit"]
+        options = ["Play", "Leaderboard", "Volume Settings", "Quit"]
         y_offset = 300
         
         for i, option in enumerate(options):
@@ -152,15 +189,17 @@ def main_menu():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % 3
+                    selected_option = (selected_option - 1) % 4
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % 3
+                    selected_option = (selected_option + 1) % 4
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:
                         menu_active = False
                         return "play"
                     elif selected_option == 1:
                         return "leaderboard"
+                    elif selected_option == 2:
+                        return "volume"
                     else:
                         pygame.quit()
                         sys.exit()
@@ -204,6 +243,10 @@ score_font = pygame.font.Font("freesansbold.ttf", 27)
 jump_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/jump.mp3")
 collision_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/collision.mp3")
 score_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/score.mp3")
+
+jump_sound.set_volume(VOLUME)
+collision_sound.set_volume(VOLUME)
+score_sound.set_volume(VOLUME)
 
 while True:
     menu_choice = main_menu()
@@ -284,3 +327,6 @@ while True:
             
             draw_leaderboard()
             pygame.display.update()
+    
+    elif menu_choice == "volume":
+        adjust_volume()
