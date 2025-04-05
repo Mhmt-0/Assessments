@@ -1,3 +1,12 @@
+
+# Flappy Bird Game
+# A recreation of the classic Flappy Bird game with additional features like:
+# Multiple difficulty levels
+# Color customization
+# High score system
+# Volume control
+# Pause functionality
+
 import pygame
 import sys
 import time
@@ -76,6 +85,17 @@ bg_transition_speed = 0.015
 bg_transition_progress = 0
 
 def create_gradient_text(surface, text, font, start_color, end_color, pos):
+    # Creates a gradient text effect from start_color to end_color.
+    # This function renders text with a smooth color transition from top to bottom.
+    
+        # Arguments:
+        # surface: The pygame surface to draw on
+        # text: The text to render
+        # font: The pygame font object to use
+        # start_color: RGB tuple for the starting color
+        # end_color: RGB tuple for the ending color
+        # pos: Tuple of (x, y) coordinates for text center position
+
     text_surface = font.render(text, True, start_color)
     text_rect = text_surface.get_rect(center=pos)
     
@@ -91,6 +111,11 @@ def create_gradient_text(surface, text, font, start_color, end_color, pos):
     surface.blit(gradient_surface, text_rect)
 
 def update_background_color():
+
+    # Updates the background color with a smooth transition effect.
+    # Creates a dynamic background by interpolating between different colors over time.
+    # Returns the current interpolated RGB color.
+
     global bg_transition_progress, bg_color_index
     bg_transition_progress += bg_transition_speed
     if bg_transition_progress >= 1:
@@ -107,15 +132,38 @@ def update_background_color():
     return (int(r), int(g), int(b))
 
 def colorize_surface(surface, color):
+
+    # Applies a color tint to a surface while preserving its transparency.
+    # Useful for creating different colored versions of the same sprite.
+    
+    # Arguments:
+        # surface: The source pygame surface
+        # color: RGB tuple for the desired color
+    # Returns:
+        # A new surface with the applied color
+
     colored_surface = surface.copy()
     colored_surface.fill(color, special_flags=pygame.BLEND_MULT)
     return colored_surface
 
 def scale_surface(surface, scale):
+
+    # Scales a surface by the given factor while maintaining aspect ratio.
+    
+    # Args:
+        # surface: The source pygame surface
+        # scale: Float value for scaling factor
+    # Returns:
+        # A new scaled surface
+
     new_size = (int(surface.get_width() * scale), int(surface.get_height() * scale))
     return pygame.transform.scale(surface, new_size)
-
 def choose_bird_color():
+
+    # Displays a menu for selecting the bird's color.
+    # Allows players to choose from different color options and updates
+    # All bird animation frames with the selected color.
+
     global CURRENT_BIRD_COLOR, bird_up, bird_mid, bird_down, birds, bird_img, bird_rect
     color_selected = False
     
@@ -161,6 +209,13 @@ def choose_bird_color():
                     color_selected = True
 
 def load_scores():
+    
+    # Loads the high scores from the scores.json file.
+    # Creates a new high scores list if the file doesn't exist.
+    
+    # Returns:
+        # Dictionary containing the list of high scores
+
     try:
         with open('scores.json', 'r') as f:
             return json.load(f)
@@ -168,6 +223,13 @@ def load_scores():
         return {'high_scores': []}
 
 def save_score(new_score):
+
+    # Saves a new score to the high scores list.
+    # Maintains only the top 5 highest scores in descending order.
+    
+    # Arguments:
+        # new_score: Integer value of the new score to save
+
     scores = load_scores()
     scores['high_scores'].append(new_score)
     scores['high_scores'].sort(reverse=True)
@@ -176,6 +238,10 @@ def save_score(new_score):
         json.dump(scores, f)
 
 def draw_leaderboard():
+    
+    # Renders the high scores leaderboard screen.
+    # Displays the top 5 scores with the highest score highlighted in yellow.
+    
     screen.fill(BLACK)
     create_gradient_text(screen, "HIGH SCORES", score_font, BLUE, PURPLE, (width // 2, 100))
 
@@ -193,10 +259,23 @@ def draw_leaderboard():
     screen.blit(instruction_text, instruction_rect)
 
 def draw_floor():
+
+    # Draws the scrolling floor of the game.
+    # Creates an infinite scrolling effect by using two floor images.
+
     screen.blit(floor_img, (floor_x, 520))
     screen.blit(floor_img, (floor_x + 448, 520))
 
 def create_pipes():
+
+    # Generates a new pair of pipes with random properties.
+    # Randomizes pipe height
+    # Randomly selects pipe color
+    # Applies random scaling to pipes
+    
+    # Returns:
+        # Tuple containing top pipe rect, bottom pipe rect, and pipe surface
+    
     global CURRENT_PIPE_COLOR
     pipe_y = random.choice(PIPE_Y_POSITIONS)
     
@@ -212,6 +291,13 @@ def create_pipes():
     return top_pipe, bottom_pipe, scaled_pipe
 
 def pipe_animation():
+
+    # Handles pipe movement and collision detection.
+    # Moves pipes from right to left
+    # Removes pipes that are off screen
+    # Checks for collisions with the bird
+    # Triggers game over on collision
+
     global game_over, score_time
     for pipe, pipe_surface in pipes:
         if pipe.top < 0:
@@ -230,6 +316,15 @@ def pipe_animation():
                 game_over = True
 
 def draw_score(game_state):
+
+    # Renders the score display based on game state.
+    # During gameplay: Shows current score
+    # After game over: Shows final score and high score
+    # Also displays the ESC key instruction during gameplay.
+    
+    # Arguments:
+        # game_state: String indicating current game state ("game_on" or "game_over")
+
     global last_flash, flash_on
     
     current_time = pygame.time.get_ticks()
@@ -265,6 +360,12 @@ def draw_score(game_state):
             screen.blit(restart_text, restart_rect)
 
 def score_update():
+
+    # Updates the player's score and high score.
+    # Increments score when passing through pipes
+    # Updates high score if current score is higher
+    # Plays score sound effect
+
     global score, score_time, high_score
     if pipes:
         for pipe, _ in pipes:
@@ -279,6 +380,14 @@ def score_update():
         high_score = score
 
 def choose_difficulty():
+
+    # Displays the difficulty selection menu.
+    # Allows players to choose between Easy, Medium, Hard, and Expert modes.
+    # Each difficulty affects:
+    # Pipe movement speed
+    # Gap between pipes
+    # Gravity strength
+
     global pipe_speed, pipe_gap, gravity
     difficulty_selected = False
     small_font = pygame.font.Font("freesansbold.ttf", 20)
@@ -325,6 +434,13 @@ def choose_difficulty():
                     difficulty_selected = True
 
 def adjust_volume():
+
+    # Provides a volume control interface.
+    # Allows adjustment of sound effects volume
+    # Shows visual volume bar
+    # Updates all game sounds immediately
+    # Saves volume setting for future sessions
+
     global VOLUME
     volume_adjusted = False
     small_font = pygame.font.Font("freesansbold.ttf", 20)
@@ -375,6 +491,15 @@ def adjust_volume():
         score_sound.set_volume(VOLUME)
 
 def main_menu():
+
+   # Displays and handles the main menu interface.
+    # Provides options for:
+    # Starting the game
+    # Customizing bird color
+    # Viewing leaderboard
+    # Adjusting volume
+    # Quitting the game
+
     menu_active = True
     selected_option = 0
     
@@ -426,6 +551,13 @@ def main_menu():
                         sys.exit()
 
 def reset_game_state():
+
+    # Resets all game variables to their initial state.
+    # Called when:
+    # Starting a new game
+    # Restarting after game over
+    # Returning to main menu
+
     global game_over, game_paused, pipes, bird_movement, score, score_time
     game_over = False
     game_paused = False
