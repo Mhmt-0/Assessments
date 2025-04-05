@@ -242,6 +242,11 @@ def draw_score(game_state):
         score_text = score_font.render(str(score), True, score_color)
         score_rect = score_text.get_rect(center=(width // 2, 66))
         screen.blit(score_text, score_rect)
+
+        esc_text = small_font.render("ESC: Return to Menu", True, WHITE)
+        esc_rect = esc_text.get_rect(topleft=(10, 10))
+        screen.blit(esc_text, esc_rect)
+
     elif game_state == "game_over":
         score_text = score_font.render(f"Score: {score}", True, WHITE)
         score_rect = score_text.get_rect(center=(width // 2, 66))
@@ -420,6 +425,17 @@ def main_menu():
                         pygame.quit()
                         sys.exit()
 
+def reset_game_state():
+    global game_over, game_paused, pipes, bird_movement, score, score_time
+    game_over = False
+    game_paused = False
+    pipes.clear()
+    bird_movement = 0
+    bird_rect.center = (67, height // 2)
+    score = 0
+    score_time = True
+    pygame.time.set_timer(create_pipe, 1200)
+
 width, height = 350, 622
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Flappy Bird")
@@ -471,6 +487,7 @@ while True:
     
     if menu_choice == "play":
         choose_difficulty()
+        reset_game_state()
         
         running = True
         while running:
@@ -491,14 +508,7 @@ while True:
 
                     if event.key == pygame.K_SPACE and game_over:
                         save_score(score)
-                        game_over = False
-                        game_paused = False
-                        pipes.clear()
-                        bird_movement = 0
-                        bird_rect.center = (67, height // 2)
-                        score_time = True
-                        score = 0
-                        pygame.time.set_timer(create_pipe, 1200)
+                        reset_game_state()
                     
                     if event.key == pygame.K_p and not game_over:
                         game_paused = not game_paused
@@ -508,6 +518,10 @@ while True:
                         else:
                             pygame.time.set_timer(bird_flap, 150)
                             pygame.time.set_timer(create_pipe, 1200)
+                    
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                        reset_game_state()
 
                 if event.type == bird_flap and not game_paused:
                     bird_index = (bird_index + 1) % 3
