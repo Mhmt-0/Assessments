@@ -1,0 +1,6 @@
+# Flappy Bird Game - Requirements
+# Logo: 🐤🎮
+
+# pygame==2.1.3
+# pip install -r requirements.txt
+# pip install pygame
