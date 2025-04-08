@@ -122,7 +122,7 @@ def safe_load_image(path, convert_alpha=False):
         raise AssetLoadError(f"Failed to load image: {path}")
 
 def create_gradient_text(surface, text, font, start_color, end_color, pos):
-    # Creates a gradient text effect from start_color to end_color.
+        # Creates a gradient text effect from start_color to end_color.
     # This function renders text with a smooth color transition from top to bottom.
     
         # Arguments:
@@ -152,7 +152,7 @@ def create_gradient_text(surface, text, font, start_color, end_color, pos):
         surface.blit(text_surface, text_rect)
 
 def update_background_color():
-     # Updates the background color with a smooth transition effect.
+    # Updates the background color with a smooth transition effect.
     # Creates a dynamic background by interpolating between different colors over time.
     # Returns the current interpolated RGB color.
     try:
@@ -175,7 +175,7 @@ def update_background_color():
         return bg_colors[0]
 
 def colorize_surface(surface, color):
-     # Applies a color tint to a surface while preserving its transparency.
+    # Applies a color tint to a surface while preserving its transparency.
     # Useful for creating different colored versions of the same sprite.
     
     # Arguments:
@@ -273,7 +273,7 @@ def draw_leaderboard():
         logging.error(f"Error drawing leaderboard: {e}")
 
 def draw_floor():
-     # Draws the scrolling floor of the game.
+    # Draws the scrolling floor of the game.
     # Creates an infinite scrolling effect by using two floor images.
     try:
         screen.blit(floor_img, (floor_x, 520))
@@ -564,7 +564,6 @@ def choose_difficulty():
     # Pipe movement speed
     # Gap between pipes
     # Gravity strength
-
     try:
         global pipe_speed, pipe_gap, gravity
         difficulty_selected = False
@@ -685,9 +684,9 @@ def choose_bird_color():
         global CURRENT_BIRD_COLOR, bird_up, bird_mid, bird_down, birds, bird_img, bird_rect
         color_selected = False
         
-        original_up = safe_load_image("images/img_47.png", True)
-        original_mid = safe_load_image("images/img_48.png", True)
-        original_down = safe_load_image("images/img_49.png", True)
+        original_up = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_47.png", True)
+        original_mid = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_48.png", True)
+        original_down = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_49.png", True)
         
         while not color_selected:
             screen.fill(BLACK)
@@ -731,7 +730,7 @@ def choose_bird_color():
         logging.error(f"Error in bird color selection: {e}")
 
 def main_menu():
-     # Displays and handles the main menu interface.
+    # Displays and handles the main menu interface.
     # Provides options for:
     # Starting the game
     # Customizing bird color
@@ -838,16 +837,16 @@ def render_game():
 
 def init_game_assets():
     try:
-        global back_img, floor_img, bird_up, bird_mid, bird_down, pipe_img, over_img
+        global back_img, floor_img, bir_up, bird_mid, bird_down, pipe_img, over_img
         global birds, bird_img, bird_rect, over_rect
         
-        back_img = safe_load_image("images/img_46.png")
-        floor_img = safe_load_image("images/img_50.png")
-        bird_up = safe_load_image("images/img_47.png", True)
-        bird_mid = safe_load_image("images/img_48.png", True)
-        bird_down = safe_load_image("images/img_49.png", True)
-        pipe_img = safe_load_image("images/greenpipe.png", True)
-        over_img = safe_load_image("images/img_45.png", True)
+        back_img = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_46.png")
+        floor_img = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_50.png")
+        bird_up = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_47.png", True)
+        bird_mid = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_48.png", True)
+        bird_down = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_49.png", True)
+        pipe_img = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/greenpipe.png", True)
+        over_img = safe_load_image("/Users/mehmet/Computer Science/IY499 Assessments/images/img_45.png", True)
         
         birds = [bird_up, bird_mid, bird_down]
         bird_img = birds[0]
@@ -863,9 +862,9 @@ def init_sound_assets():
     try:
         global jump_sound, collision_sound, score_sound
         
-        jump_sound = pygame.mixer.Sound("sounds/jump.mp3")
-        collision_sound = pygame.mixer.Sound("sounds/collision.mp3")
-        score_sound = pygame.mixer.Sound("sounds/score.mp3")
+        jump_sound = pygame.mixer.Sound("/Users/mehmet/Computer Science/IY499 Assessments/sounds/jump.mp3")
+        collision_sound = pygame.mixer.Sound("/Users/mehmet/Computer Science/IY499 Assessments/sounds/collision.mp3")
+        score_sound = pygame.mixer.Sound("/Users/mehmet/Computer Science/IY499 Assessments/sounds/score.mp3")
         
         jump_sound.set_volume(VOLUME)
         collision_sound.set_volume(VOLUME)
