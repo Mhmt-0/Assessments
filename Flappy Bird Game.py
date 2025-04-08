@@ -685,9 +685,9 @@ def choose_bird_color():
         global CURRENT_BIRD_COLOR, bird_up, bird_mid, bird_down, birds, bird_img, bird_rect
         color_selected = False
         
-        original_up = safe_load_image("/Users/mehmet/Downloads/img_47.png", True)
-        original_mid = safe_load_image("/Users/mehmet/Downloads/img_48.png", True)
-        original_down = safe_load_image("/Users/mehmet/Downloads/img_49.png", True)
+        original_up = safe_load_image("images/img_47.png", True)
+        original_mid = safe_load_image("images/img_48.png", True)
+        original_down = safe_load_image("images/img_49.png", True)
         
         while not color_selected:
             screen.fill(BLACK)
@@ -841,13 +841,13 @@ def init_game_assets():
         global back_img, floor_img, bird_up, bird_mid, bird_down, pipe_img, over_img
         global birds, bird_img, bird_rect, over_rect
         
-        back_img = safe_load_image("/Users/mehmet/Downloads/img_46.png")
-        floor_img = safe_load_image("/Users/mehmet/Downloads/img_50.png")
-        bird_up = safe_load_image("/Users/mehmet/Downloads/img_47.png", True)
-        bird_mid = safe_load_image("/Users/mehmet/Downloads/img_48.png", True)
-        bird_down = safe_load_image("/Users/mehmet/Downloads/img_49.png", True)
-        pipe_img = safe_load_image("/Users/mehmet/Downloads/greenpipe.png", True)
-        over_img = safe_load_image("/Users/mehmet/Downloads/img_45.png", True)
+        back_img = safe_load_image("images/img_46.png")
+        floor_img = safe_load_image("images/img_50.png")
+        bird_up = safe_load_image("images/img_47.png", True)
+        bird_mid = safe_load_image("images/img_48.png", True)
+        bird_down = safe_load_image("images/img_49.png", True)
+        pipe_img = safe_load_image("images/greenpipe.png", True)
+        over_img = safe_load_image("images/img_45.png", True)
         
         birds = [bird_up, bird_mid, bird_down]
         bird_img = birds[0]
@@ -863,9 +863,9 @@ def init_sound_assets():
     try:
         global jump_sound, collision_sound, score_sound
         
-        jump_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/jump.mp3")
-        collision_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/collision.mp3")
-        score_sound = pygame.mixer.Sound("/Users/mehmet/Downloads/score.mp3")
+        jump_sound = pygame.mixer.Sound("sounds/jump.mp3")
+        collision_sound = pygame.mixer.Sound("sounds/collision.mp3")
+        score_sound = pygame.mixer.Sound("sounds/score.mp3")
         
         jump_sound.set_volume(VOLUME)
         collision_sound.set_volume(VOLUME)
